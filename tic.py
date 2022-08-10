@@ -43,30 +43,36 @@ class State:
 
 # def construct_tree
 
+import json
+
 class Tree:
+  def __init__(self, board, current_player, best_action, best_outcome, tried_actions, untried_actions):
+    self.board = None
+    self.current_player = None
+    self.best_action = []
+    self.best_outcome = []
+    self.tried_actions = None
+    self.untried_actions = None
 
-  def __init__(self, state, possible_actions):
-    self.state = None
-    self.possible_actions = None
-    self.state_value = None
-    self.next_nodes = []
+  def __repr__(self):
+    return json.dumps(self.__dict__)
 
-state_values = {}
+tree = Tree(
+  board = [
+    [-1, -1, 1],
+    [-1, -1, 1],
+    [0, 0, 0]
+  ],
+  current_player = 'O',
+  tried_actions = [
+    [2, 0],
+    [2, 1],
+    [2, 2],
+  ],
+  untried_actions = [
+  ],
+  best_action = [2, 2],
+  best_outcome = 1
+)
 
-board = State(numpy.zeros((3, 3)))
-
-print(board)
-
-action = Action((1, 1), X)
-info(action)
-next_state = board.step(action)
-print(next_state)
-
-initial_state = State(numpy.zeros((3, 3)))
-
-info(numpy.where(initial_state.board))
-possible_actions = initial_state.possible_actions()
-info(possible_actions)
-tic_tree = Tree(initial_state, possible_actions)
-tic_tree
-Tree()
+info(tree)
