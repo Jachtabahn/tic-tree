@@ -1,8 +1,12 @@
 import numpy
+import hashlib
 from info import info
 
 X = 1
 O = 2
+
+next_state_name = 0
+next_node_name = 0
 
 # Eine Action ist genauso viel Wert wie ein Tupel ((1, 1), 1): meaning Put 1 on position (1, 1)
 class Action:
@@ -16,9 +20,17 @@ class Action:
 
 class State:
 
-  def __init__(self, board, current_player=X):
+  def __init__(self, board, current_player):
+
+    global next_state_name
+    self.name = next_state_name
+    next_state_name += 1
+
     self.board = board
     self.current_player = current_player
+
+    state_text = str(self.board) + str(current_player)
+    self.hash = hashlib.sha256(state_text.encode('utf-8')).hexdigest()
 
   def step(self, action):
     next_state = self.board.copy()
@@ -30,10 +42,8 @@ class State:
     if self.current_player == O: return X
 
   def possible_actions(self):
-    empty_positions = list(zip(*(self.board == 0).nonzero()))
-    next_player = self._next_player()
-    possible_actions = [Action(position, next_player) for position in empty_positions]
-    return possible_actions
+    empty_positions = list(zip(*(numpy.array(self.board) == 0).nonzero()))
+    return empty_positions
 
   def __repr__(self):
     if self.current_player == X: player_text = 'X'
@@ -45,34 +55,50 @@ class State:
 
 import json
 
-class Tree:
-  def __init__(self, board, current_player, best_action, best_outcome, tried_actions, untried_actions):
-    self.board = None
-    self.current_player = None
-    self.best_action = []
-    self.best_outcome = []
-    self.tried_actions = None
-    self.untried_actions = None
+class Node:
+  def __init__(self, state):
+    self.state = state
+    self.best_action = None
+    self.best_outcome = None
+    self.children = dict((action, None) for action in state.possible_actions())
+
+  def create_node(board, current_player):
+
+    # Try to fetch a node from memory.
+    state = State(board, current_player)
+    if state.hash in node_from_state_hash:
+      return node_from_state_hash[state.hash]
+
+    # Fetching didn't work... create a node,
+    node = Node(state)
+
+    # then save it into memory,
+    node_from_state_hash[state.hash] = node
+
+    # and make it available for use.
+    return node
 
   def __repr__(self):
-    return json.dumps(self.__dict__)
+    return str({
+      "state": {
+        "board": self.state.board,
+        "current_player": self.state.current_player
+      },
+      "best_action": self.best_action,
+      "best_outcome": self.best_outcome,
+      "children": self.children
+    })
 
-tree = Tree(
+node_from_state_hash = {}
+
+node = Node.create_node(
   board = [
     [-1, -1, 1],
     [-1, -1, 1],
     [0, 0, 0]
   ],
-  current_player = 'O',
-  tried_actions = [
-    [2, 0],
-    [2, 1],
-    [2, 2],
-  ],
-  untried_actions = [
-  ],
-  best_action = [2, 2],
-  best_outcome = 1
+  current_player = 'O'
 )
 
-info(tree)
+info(node)
+info(node_from_state_hash)
