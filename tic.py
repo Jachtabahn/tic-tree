@@ -45,21 +45,33 @@ class State:
     return empty_positions
 
 class Node:
-  def __init__(self, state, parent):
+
+  def __init__(self, state, parent, last_action):
     self.state = state
-    self.best_action = (1, 1)
-    self.best_outcome = -1
+    self.last_action = last_action
     self.parent = parent
+
+    self.best_action = None
+    self.best_outcome = None
+
     self.children = dict((action, None) for action in state.possible_actions())
 
-  def create_node(board, parent=None):
+  def get_untried_actions(self):
+    untried_actions = [action for action, child_node in self.children.items() if child_node is None]
+    return untried_actions
+
+  def get_tried_actions(self):
+    tried_actions = [action for action, child_node in self.children.items() if child_node is not None]
+    return tried_actions
+
+  def create_node(board, parent=None, last_action=None):
     # Try to fetch a node from memory.
     state = State(board)
     if state.hash in node_from_state_hash:
       return node_from_state_hash[state.hash]
 
     # Fetching didn't work... create a node,
-    node = Node(state, parent)
+    node = Node(state, parent, last_action)
 
     # then save it into memory,
     node_from_state_hash[state.hash] = node
@@ -71,7 +83,7 @@ class Node:
     for action in self.children:
       next_board = self.state.board.copy()
       next_board[action] = self.state.current_player
-      child_node = Node.create_node(next_board, self)
+      child_node = Node.create_node(next_board, self, action)
       self.children[action] = child_node
 
   def determine_level(self):
@@ -135,7 +147,11 @@ class Node:
       info(state_hash)
       info(children_hashes)
       for child_hash in children_hashes:
-        vis_edge_declaration = {'from': state_hash, 'to': child_hash}
+        vis_edge_declaration = {
+          'from': state_hash,
+          'to': child_hash,
+          'color': '#000000'
+        }
         vis_js_json['edges'].append(vis_edge_declaration)
     return vis_js_json
 
