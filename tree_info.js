@@ -19,7 +19,7 @@ tree_info={
     {
       "id": 5,
       "label": "Node 5",
-      "image": "base_image.svg",
+      "image": "tic_state.svg",
       "shape": "image"
     }
   ],
