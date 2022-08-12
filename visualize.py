@@ -4,6 +4,9 @@ import bokeh.io
 import bokeh.models
 import numpy
 
+# last action
+# so einen dünnen Faden drum herum machen
+
 state = {
   'board': [
     [-1, -1, 1],
