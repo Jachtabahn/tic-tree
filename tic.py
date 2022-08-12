@@ -8,11 +8,21 @@ import numpy
 X = 1
 O = -1
 
+possible_winning_rows = [[(r, c) for c in range(3)] for r in range(3)]
+possible_winning_columns = [[(r, c) for r in range(3)] for c in range(3)]
+main_diagonal = [(r, r) for r in range(3)]
+side_diagonal = [(r, 2-r) for r in range(3)]
+
+possible_winning_streaks = possible_winning_rows + possible_winning_columns + [main_diagonal, side_diagonal]
+
+info(possible_winning_streaks)
+
 class State:
 
   def __init__(self, board):
     self.board = numpy.array(board)
     self.current_player = self.get_current_player()
+    self.winning_streak = self.determine_winning_streak()
     state_text = str(self.board) + str(self.current_player)
     self.hash = int(hashlib.sha256(state_text.encode('utf-8')).hexdigest(), 16)
     # for clearer reading
@@ -23,6 +33,15 @@ class State:
     # If the prefix is too short,
     # you will get an error below under
     # `node_from_state_hash[state.hash] = node`.
+
+  def determine_winning_streak(self):
+    for possible_winning_streak in possible_winning_streaks:
+      sum_of_token_numbers = sum(self.board[position] for position in possible_winning_streak)
+      if sum_of_token_numbers == 3:
+        return possible_winning_streak
+      if sum_of_token_numbers == -3:
+        return possible_winning_streak
+    return None
 
   def token_to_player(self, token):
     if token == X: return 'X'
@@ -38,7 +57,8 @@ class State:
   def step(self, action):
     next_board = self.board.copy()
     next_board[action] = self.current_player
-    return State(next_board)
+    next_state = State(next_board)
+    return next_state
 
   def possible_actions(self):
     empty_positions = list(zip(*(numpy.array(self.board) == 0).nonzero()))
@@ -85,6 +105,9 @@ class Node:
       next_board[action] = self.state.current_player
       child_node = Node.create_node(next_board, self, action)
       self.children[action] = child_node
+      # Einen Rahmen um den Endzustand herum zeichnen
+      if child_node.state.winning_streak is None:
+        child_node.expand()
 
   def determine_level(self):
     level = 0
