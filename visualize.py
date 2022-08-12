@@ -6,25 +6,6 @@ import numpy
 
 def create_svg(node):
 
-  '''
-  state = {
-    'board': [
-      [-1, -1, 1],
-      [-1, -1, 1],
-      [0, 0, 0]
-    ],
-    'current_player': 'O',
-    'tried_actions': [
-      [2, 0],
-      [2, 1],
-      [2, 2],
-    ],
-    'untried_actions': [
-    ],
-    'best_action': [2, 2],
-    'best_outcome': 1
-  }
-  '''
   # last action
   # so einen dünnen Faden drum herum machen
 
@@ -32,117 +13,126 @@ def create_svg(node):
     width = 300,
     height = 300,
     output_backend = 'svg',
-    min_border = 0,
+
+    # If you comment out this option,
+    # the vis.js tree arrows will come too close to the grid part of the Tic Tac Toe board.
+    # min_border = 0,
+
     toolbar_location = None,
     background_fill_alpha = 0,
     outline_line_alpha = 0
   )
 
-  # # Orangene Felder: Die noch nicht ausprobierten Züge
-  # # =====================================================================
-  # source = bokeh.models.ColumnDataSource({
-  #   'x': [action[1] + 0.5 for action in state.untried_actions],
-  #   'y': [2 - action[0] + 0.5 for action in state.untried_actions],
-  #   'w': [1] * len(state.untried_actions),
-  #   'h': [1] * len(state.untried_actions)
-  # })
-  # glyph = bokeh.models.Rect(
-  #   x = 'x',
-  #   y = 'y',
-  #   width = 'w',
-  #   height = 'h',
-  #   line_alpha = 0,
-  #   fill_color = '#ff8129'
-  # )
-  # plot.add_glyph(source, glyph)
-  # # =====================================================================
+  # Orangene Felder: Die noch nicht ausprobierten Züge
+  # =====================================================================
+  untried_actions = node.get_untried_actions()
+  source = bokeh.models.ColumnDataSource({
+    'x': [action[1] + 0.5 for action in untried_actions],
+    'y': [2 - action[0] + 0.5 for action in untried_actions],
+    'w': [1] * len(untried_actions),
+    'h': [1] * len(untried_actions)
+  })
+  glyph = bokeh.models.Rect(
+    x = 'x',
+    y = 'y',
+    width = 'w',
+    height = 'h',
+    line_alpha = 0,
+    fill_color = '#ff8129',
+    fill_alpha = 0.5
+  )
+  plot.add_glyph(source, glyph)
+  # =====================================================================
 
-  # # Graue Felder: Die bereits ausprobierten Züge
-  # # =====================================================================
-  # source = bokeh.models.ColumnDataSource({
-  #   'x': [action[1] + 0.5 for action in state.tried_actions],
-  #   'y': [2 - action[0] + 0.5 for action in state.tried_actions],
-  #   'w': [1] * len(state.tried_actions),
-  #   'h': [1] * len(state.tried_actions)
-  # })
-  # glyph = bokeh.models.Rect(
-  #   x = 'x',
-  #   y = 'y',
-  #   width = 'w',
-  #   height = 'h',
-  #   line_alpha = 0,
-  #   fill_color = '#9e928a'
-  # )
-  # plot.add_glyph(source, glyph)
-  # # =====================================================================
+  # Graue Felder: Die bereits ausprobierten Züge
+  # =====================================================================
+  tried_actions = node.get_tried_actions()
+  source = bokeh.models.ColumnDataSource({
+    'x': [action[1] + 0.5 for action in tried_actions],
+    'y': [2 - action[0] + 0.5 for action in tried_actions],
+    'w': [1] * len(tried_actions),
+    'h': [1] * len(tried_actions)
+  })
+  glyph = bokeh.models.Rect(
+    x = 'x',
+    y = 'y',
+    width = 'w',
+    height = 'h',
+    line_alpha = 0,
+    fill_color = '#9e928a',
+    fill_alpha = 0.5
+  )
+  plot.add_glyph(source, glyph)
+  # =====================================================================
 
   # Grünes Feld: Der beste Zug
   # =====================================================================
-  source = bokeh.models.ColumnDataSource({
-    'x': [node.best_action[1] + 0.5],
-    'y': [2 - node.best_action[0] + 0.5],
-    'w': [1],
-    'h': [1]
-  })
-  glyph = bokeh.models.Rect(
-    x = 'x',
-    y = 'y',
-    width = 'w',
-    height = 'h',
-    line_alpha = 0,
-    fill_color = '#48f000'
-  )
-  plot.add_glyph(source, glyph)
-
-  # Grauer Teil: Das beste Resultat
-  source = bokeh.models.ColumnDataSource({
-    'x': [node.best_action[1] + 0.5],
-    'y': [2 - node.best_action[0] + 0.5],
-    'w': [0.4],
-    'h': [0.1]
-  })
-  glyph = bokeh.models.Rect(
-    x = 'x',
-    y = 'y',
-    width = 'w',
-    height = 'h',
-    line_alpha = 0,
-    fill_color = '#9e928a'
-  )
-  plot.add_glyph(source, glyph)
-
-  # Dreieck: Das beste Resultat
-  if node.best_outcome == 1:
+  if node.best_action is not None:
     source = bokeh.models.ColumnDataSource({
       'x': [node.best_action[1] + 0.5],
-      'y': [2 - node.best_action[0] + 0.5 + 0.15],
+      'y': [2 - node.best_action[0] + 0.5],
+      'w': [1],
+      'h': [1]
     })
-    triangle = bokeh.models.Scatter(
+    glyph = bokeh.models.Rect(
       x = 'x',
       y = 'y',
+      width = 'w',
+      height = 'h',
       line_alpha = 0,
-      fill_color = '#115ab2',
-      size = 25,
-      angle = 0,
-      marker = 'triangle'
+      fill_color = '#48f000'
     )
-    plot.add_glyph(source, triangle)
+    plot.add_glyph(source, glyph)
 
-  if node.best_outcome == -1:
+    # Grauer Teil: Das beste Resultat
     source = bokeh.models.ColumnDataSource({
       'x': [node.best_action[1] + 0.5],
-      'y': [2 - node.best_action[0] + 0.5 - 0.15],
+      'y': [2 - node.best_action[0] + 0.5],
+      'w': [0.4],
+      'h': [0.1]
     })
-    triangle = bokeh.models.Scatter(
+    glyph = bokeh.models.Rect(
       x = 'x',
       y = 'y',
+      width = 'w',
+      height = 'h',
       line_alpha = 0,
-      fill_color = '#b21111',
-      size = 25,
-      angle = numpy.pi,
-      marker = 'triangle'
+      fill_color = '#9e928a'
     )
-    plot.add_glyph(source, triangle)
+    plot.add_glyph(source, glyph)
+
+    # Dreieck: Das beste Resultat
+    if node.best_outcome == 1:
+      source = bokeh.models.ColumnDataSource({
+        'x': [node.best_action[1] + 0.5],
+        'y': [2 - node.best_action[0] + 0.5 + 0.15],
+      })
+      triangle = bokeh.models.Scatter(
+        x = 'x',
+        y = 'y',
+        line_alpha = 0,
+        fill_color = '#115ab2',
+        size = 25,
+        angle = 0,
+        marker = 'triangle'
+      )
+      plot.add_glyph(source, triangle)
+
+    if node.best_outcome == -1:
+      source = bokeh.models.ColumnDataSource({
+        'x': [node.best_action[1] + 0.5],
+        'y': [2 - node.best_action[0] + 0.5 - 0.15],
+      })
+      triangle = bokeh.models.Scatter(
+        x = 'x',
+        y = 'y',
+        line_alpha = 0,
+        fill_color = '#b21111',
+        size = 25,
+        angle = numpy.pi,
+        marker = 'triangle'
+      )
+      plot.add_glyph(source, triangle)
   # =====================================================================
 
   # Das Gitter des Bretts
@@ -150,15 +140,16 @@ def create_svg(node):
   source = bokeh.models.ColumnDataSource({
     'x': [1, 2, 1.5, 1.5],
     'y': [1.5, 1.5, 2, 1],
-    'w': [0.2, 0.2, 3, 3],
-    'h': [3, 3, 0.2, 0.2]
+    'w': [0.1, 0.1, 3, 3],
+    'h': [3, 3, 0.1, 0.1]
   })
   glyph = bokeh.models.Rect(
     x = 'x',
     y = 'y',
     width = 'w',
     height = 'h',
-    fill_color='#000000'
+    fill_color='#646464',
+    line_width=0
   )
   plot.add_glyph(source, glyph)
   # =====================================================================
@@ -167,14 +158,13 @@ def create_svg(node):
   # =====================================================================
   for row_index, row in enumerate(node.state.board):
     for column_index, token in enumerate(row):
+
       if token in [1, -1]:
         draw_symbol = node.state.token_to_player(token)
 
-        color = None
-        if token == -1:
+        color = '#000000'
+        if node.last_action == (row_index, column_index):
           color = '#b21111'
-        if token == 1:
-          color = '#115ab2'
 
         token_text = Label(
           x = column_index + 0.1,
