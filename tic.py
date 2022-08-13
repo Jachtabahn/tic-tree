@@ -156,13 +156,15 @@ class Node:
     for state_hash, node in node_from_state_hash.items():
       state_level = node.determine_level()
       info(state_level)
+
+      # This vis.js configuration applies to this specific node.
       vis_node_declaration = {
         'id': state_hash,
         'level': state_level,
-        'image': f'nodes/{node.state.hash}.svg',
-        'shape': 'image'
+        'image': f'nodes/{node.state.hash}.svg'
       }
       vis_js_json['nodes'].append(vis_node_declaration)
+
       visualize.create_svg(node)
 
     vis_js_json['edges'] = []
@@ -171,12 +173,14 @@ class Node:
       info(state_hash)
       info(children_hashes)
       for child_hash in children_hashes:
+
+        # This vis.js configuration applies to this specific edge.
         vis_edge_declaration = {
           'from': state_hash,
-          'to': child_hash,
-          'color': '#000000'
+          'to': child_hash
         }
         vis_js_json['edges'].append(vis_edge_declaration)
+
     return vis_js_json
 
 node_from_state_hash = {}
