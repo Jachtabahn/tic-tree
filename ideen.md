@@ -3,8 +3,21 @@
 
 
 
+ändere die Hintergrundfarbe des Baums
+ändere die Hintergrundfarbe des Tic Tac Toe Bretts
+# grün: die Kante markieren
+# orange: die Kante markieren
+# grau: die Kante markieren
+  # Einen Rahmen um den Endzustand herum zeichnen
 
-
+    # for clearer reading
+    # content-based
+    # naming_renaming
+    # You might want to only take a prefix of that hexdigest
+    # for better viewing of the code in the .js file.
+    # If the prefix is too short,
+    # you will get an error below under
+    # `node_from_state_hash[state.hash] = node`.
 
 
 
