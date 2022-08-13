@@ -165,6 +165,11 @@ def create_svg(node):
         color = '#000000'
         if node.last_action == (row_index, column_index):
           color = '#b21111'
+        if node.state.winning_streak is not None and (row_index, column_index) in node.state.winning_streak:
+          if draw_symbol == 'X':
+            color = '#008f0b'
+          if draw_symbol == 'O':
+            color = '#b21111'
 
         token_text = Label(
           x = column_index + 0.1,
