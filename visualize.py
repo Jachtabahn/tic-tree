@@ -3,8 +3,11 @@ from info import info
 import bokeh.io
 import bokeh.models
 import numpy
+import os
 
 def create_svg(node):
+
+  if os.path.exists(f'nodes/{node.state.hash}.svg'): return
 
   # last action
   # so einen dünnen Faden drum herum machen
