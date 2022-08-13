@@ -22,26 +22,18 @@ class State:
   def __init__(self, board):
     self.board = numpy.array(board)
     self.current_player = self.get_current_player()
-    self.winning_streak = self.determine_winning_streak()
+    self.winning_streak, self.immediate_result = self.determine_winning_streak()
     state_text = str(self.board) + str(self.current_player)
     self.hash = int(hashlib.sha256(state_text.encode('utf-8')).hexdigest(), 16)
-    # for clearer reading
-    # content-based
-    # naming_renaming
-    # You might want to only take a prefix of that hexdigest
-    # for better viewing of the code in the .js file.
-    # If the prefix is too short,
-    # you will get an error below under
-    # `node_from_state_hash[state.hash] = node`.
 
   def determine_winning_streak(self):
     for possible_winning_streak in possible_winning_streaks:
       sum_of_token_numbers = sum(self.board[position] for position in possible_winning_streak)
       if sum_of_token_numbers == 3:
-        return possible_winning_streak
+        return possible_winning_streak, X
       if sum_of_token_numbers == -3:
-        return possible_winning_streak
-    return None
+        return possible_winning_streak, O
+    return None, None
 
   def token_to_player(self, token):
     if token == X: return 'X'
@@ -74,7 +66,7 @@ class Node:
     self.parent = parent
 
     self.best_action = None
-    self.best_outcome = None
+    self.best_future_result = None
 
     self.children = dict((action, None) for action in state.possible_actions())
 
@@ -107,8 +99,61 @@ class Node:
       next_board[action] = self.state.current_player
       child_node = Node.create_node(next_board, self, action)
       self.children[action] = child_node
-      # Einen Rahmen um den Endzustand herum zeichnen
+
       child_node.expand()
+
+      # Is the child_node a leaf, where we have a winner?
+      if child_node.state.immediate_result is not None:
+
+        # We initialize the outcome and action that we estimate to be the best possible from this state.
+        if self.best_future_result is None:
+          self.best_future_result = child_node.state.immediate_result
+          self.best_action = action
+
+        # Maximizer.
+        if self.state.current_player == X and child_node.state.immediate_result > self.best_future_result:
+          self.best_future_result = child_node.state.immediate_result
+          self.best_action = action
+
+        # Minimizer.
+        if self.state.current_player == O and child_node.state.immediate_result < self.best_future_result:
+          self.best_future_result = child_node.state.immediate_result
+          self.best_action = action
+
+      # Is the child_node a leaf, where we have no winner?
+      if child_node.state.immediate_result is None and len(child_node.children) == 0:
+
+        # We initialize the outcome and action that we estimate to be the best possible from this state.
+        if self.best_future_result is None:
+          self.best_future_result = 0
+          self.best_action = action
+
+        # Maximizer.
+        if self.state.current_player == X and 0 > self.best_future_result:
+          self.best_future_result = 0
+          self.best_action = action
+
+        # Minimizer.
+        if self.state.current_player == O and 0 < self.best_future_result:
+          self.best_future_result = 0
+          self.best_action = action
+
+      if child_node.children:
+
+        # We initialize the outcome and action that we estimate to be the best possible from this state.
+        if self.best_future_result is None:
+          self.best_future_result = child_node.best_future_result
+          self.best_action = action
+
+        # Maximizer.
+        if self.state.current_player == X and child_node.best_future_result > self.best_future_result:
+          self.best_future_result = child_node.best_future_result
+          self.best_action = action
+
+        # Minimizer.
+        if self.state.current_player == O and child_node.best_future_result < self.best_future_result:
+          self.best_future_result = child_node.best_future_result
+          self.best_action = action
 
   def determine_level(self):
     level = 0
@@ -133,7 +178,7 @@ class Node:
         'hash': self.state.hash
       },
       'best_action': self.best_action,
-      'best_outcome': self.best_outcome,
+      'best_future_result': self.best_future_result,
       'children': self.children
     })
 
@@ -146,7 +191,6 @@ class Node:
 
   def create_vis_js_json(self):
 
-    # Makes a folder for storing the png images
     if not os.path.exists('nodes'):
       os.mkdir('nodes')
 
@@ -187,8 +231,8 @@ node_from_state_hash = {}
 
 node = Node.create_node(
   board = [
-    [O, X, O],
-    [X, X, O],
+    [0, 0, 0],
+    [X, 0, 0],
     [0, 0, 0]
   ]
 )
