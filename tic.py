@@ -61,8 +61,10 @@ class State:
     return next_state
 
   def possible_actions(self):
-    empty_positions = list(zip(*(numpy.array(self.board) == 0).nonzero()))
-    return empty_positions
+    if self.winning_streak is None:
+      empty_positions = list(zip(*(numpy.array(self.board) == 0).nonzero()))
+      return empty_positions
+    return []
 
 class Node:
 
@@ -106,8 +108,7 @@ class Node:
       child_node = Node.create_node(next_board, self, action)
       self.children[action] = child_node
       # Einen Rahmen um den Endzustand herum zeichnen
-      if child_node.state.winning_streak is None:
-        child_node.expand()
+      child_node.expand()
 
   def determine_level(self):
     level = 0
