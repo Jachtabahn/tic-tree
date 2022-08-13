@@ -7,17 +7,14 @@ import os
 
 def create_svg(node):
 
-  if os.path.exists(f'nodes/{node.state.hash}.svg'): return
-
-  # last action
-  # so einen dünnen Faden drum herum machen
+  # if os.path.exists(f'nodes/{node.state.hash}.svg'): return
 
   plot = bokeh.models.Plot(
     width = 300,
     height = 300,
     output_backend = 'svg',
 
-    # If you comment out this option,
+    # If you include this option,
     # the vis.js tree arrows will come too close to the grid part of the Tic Tac Toe board.
     # min_border = 0,
 
@@ -105,7 +102,7 @@ def create_svg(node):
     plot.add_glyph(source, glyph)
 
     # Dreieck: Das beste Resultat
-    if node.best_outcome == 1:
+    if node.best_future_result == 1:
       source = bokeh.models.ColumnDataSource({
         'x': [node.best_action[1] + 0.5],
         'y': [2 - node.best_action[0] + 0.5 + 0.15],
@@ -121,7 +118,7 @@ def create_svg(node):
       )
       plot.add_glyph(source, triangle)
 
-    if node.best_outcome == -1:
+    if node.best_future_result == -1:
       source = bokeh.models.ColumnDataSource({
         'x': [node.best_action[1] + 0.5],
         'y': [2 - node.best_action[0] + 0.5 - 0.15],
