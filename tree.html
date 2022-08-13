@@ -7,6 +7,9 @@
     #mynetwork {
       width: 100%;
       height: 100%;
+
+      /* If `border: 0px;` is omitted, thick, black lines around the game tree might be drawn. */
+      border: 0px;
     }
   </style>
   <title>🌳 Game Tree</title>
@@ -40,6 +43,8 @@
 
     // This configuration applies to all edges.
     edges: {
+      arrows: 'to',
+      arrowStrikethrough: false,
       color: {
         color: '#000000',
         highlight: 'red'
@@ -49,8 +54,16 @@
     layout: {
       hierarchical: {
         direction: "UD",
+        nodeSpacing: 100,
+        levelSeparation: 300
       },
     },
+    physics:{
+      enabled: true,
+      hierarchicalRepulsion: {
+        nodeDistance: 400
+      }
+    }
   };
   // initialize your network!
   var network = new vis.Network(container, data, options);
