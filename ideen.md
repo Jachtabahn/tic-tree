@@ -1,6 +1,7 @@
 
 
-
+da und da: Mache das Kästchen grün und den Pfeil grün.
+Die Players tauschen (da wir schon Rotationen und Reflektionen machen)
 Jede Kante danach färben, ob sie bereits probiert wurde oder nicht
 UTF-8 triangle for each edge
 ändere die Hintergrundfarbe des Baums
