@@ -58,6 +58,7 @@ class State:
       return empty_positions
     return []
 
+how_many = 0
 class Node:
 
   def __init__(self, state, parent, last_action):
@@ -100,7 +101,26 @@ class Node:
       child_node = Node.create_node(next_board, self, action)
       self.children[action] = child_node
 
-      child_node.expand()
+      global how_many
+      if how_many < 100:
+        child_node.expand()
+        how_many += 1
+
+        if child_node.children:
+          # We initialize the outcome and action that we estimate to be the best possible from this state.
+          if self.best_future_result is None:
+            self.best_future_result = child_node.best_future_result
+            self.best_action = action
+
+          # Maximizer.
+          if self.state.current_player == X and child_node.best_future_result > self.best_future_result:
+            self.best_future_result = child_node.best_future_result
+            self.best_action = action
+
+          # Minimizer.
+          if self.state.current_player == O and child_node.best_future_result < self.best_future_result:
+            self.best_future_result = child_node.best_future_result
+            self.best_action = action
 
       # Is the child_node a leaf, where we have a winner?
       if child_node.state.immediate_result is not None:
@@ -136,23 +156,6 @@ class Node:
         # Minimizer.
         if self.state.current_player == O and 0 < self.best_future_result:
           self.best_future_result = 0
-          self.best_action = action
-
-      if child_node.children:
-
-        # We initialize the outcome and action that we estimate to be the best possible from this state.
-        if self.best_future_result is None:
-          self.best_future_result = child_node.best_future_result
-          self.best_action = action
-
-        # Maximizer.
-        if self.state.current_player == X and child_node.best_future_result > self.best_future_result:
-          self.best_future_result = child_node.best_future_result
-          self.best_action = action
-
-        # Minimizer.
-        if self.state.current_player == O and child_node.best_future_result < self.best_future_result:
-          self.best_future_result = child_node.best_future_result
           self.best_action = action
 
   def determine_level(self):
