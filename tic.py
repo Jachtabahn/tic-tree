@@ -99,23 +99,16 @@ class Node:
       states_with_the_same_best_action.append(rotated_state)
       states_with_the_same_best_action.append(reflected_state)
     hash_minimal_state_with_the_same_best_action = min(states_with_the_same_best_action, key = lambda state: state.hash)
-    info(hash_minimal_state_with_the_same_best_action)
-    info(hash_minimal_state_with_the_same_best_action.board)
-    hashes = [state_with_the_same_best_action.hash for state_with_the_same_best_action in states_with_the_same_best_action]
-    info(hashes)
-    info(min(hashes))
-    info(boards_where_each_state_has_the_same_best_action)
 
     # Try to fetch a node from memory.
-    state = State(board)
-    if state.hash in node_from_state_hash:
-      return node_from_state_hash[state.hash]
+    if hash_minimal_state_with_the_same_best_action.hash in node_from_state_hash:
+      return node_from_state_hash[hash_minimal_state_with_the_same_best_action.hash]
 
     # Fetching didn't work... create a node,
-    node = Node(state, parent, last_action)
+    node = Node(hash_minimal_state_with_the_same_best_action, parent, last_action)
 
     # then save it into memory,
-    node_from_state_hash[state.hash] = node
+    node_from_state_hash[hash_minimal_state_with_the_same_best_action.hash] = node
 
     # and make it available for use.
     return node
