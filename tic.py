@@ -80,6 +80,32 @@ class Node:
     return tried_actions
 
   def create_node(board, parent=None, last_action=None):
+
+    # Rotate and reflect the board in all possible ways.
+    # There are 8 results of rotations and reflections.
+    # All of these can be achieved by concatenating one rotation and one reflection.
+    # The rotation will be the counter-clock wise rotation by one corner.
+    # The reflection will be along the middle row.
+    boards_where_each_state_has_the_same_best_action = []
+    states_with_the_same_best_action = []
+    for number_of_rotations in range(4):
+      rotated_board = numpy.rot90(board, k = number_of_rotations)
+      reflected_board = numpy.flipud(rotated_board)
+      boards_where_each_state_has_the_same_best_action.append(rotated_board)
+      boards_where_each_state_has_the_same_best_action.append(reflected_board)
+
+      rotated_state = State(rotated_board)
+      reflected_state = State(reflected_board)
+      states_with_the_same_best_action.append(rotated_state)
+      states_with_the_same_best_action.append(reflected_state)
+    hash_minimal_state_with_the_same_best_action = min(states_with_the_same_best_action, key = lambda state: state.hash)
+    info(hash_minimal_state_with_the_same_best_action)
+    info(hash_minimal_state_with_the_same_best_action.board)
+    hashes = [state_with_the_same_best_action.hash for state_with_the_same_best_action in states_with_the_same_best_action]
+    info(hashes)
+    info(min(hashes))
+    info(boards_where_each_state_has_the_same_best_action)
+
     # Try to fetch a node from memory.
     state = State(board)
     if state.hash in node_from_state_hash:
