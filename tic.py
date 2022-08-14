@@ -20,7 +20,7 @@ info(possible_winning_streaks)
 class State:
 
   def __init__(self, board):
-    self.board = numpy.array(board)
+    self.board = board
     self.current_player = self.get_current_player()
     self.winning_streak, self.immediate_result = self.determine_winning_streak()
     state_text = str(self.board) + str(self.current_player)
@@ -233,11 +233,11 @@ class Node:
 node_from_state_hash = {}
 
 node = Node.create_node(
-  board = [
+  board = numpy.array([
     [0, 0, 0],
-    [X, 0, 0],
+    [0, 0, 0],
     [0, 0, 0]
-  ]
+  ])
 )
 
 node.expand()
