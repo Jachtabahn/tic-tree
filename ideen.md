@@ -1,8 +1,8 @@
 
 
 
-
-
+Jede Kante danach färben, ob sie bereits probiert wurde oder nicht
+UTF-8 triangle for each edge
 ändere die Hintergrundfarbe des Baums
 ändere die Hintergrundfarbe des Tic Tac Toe Bretts
 # grün: die Kante markieren
