@@ -1,7 +1,10 @@
 
 
+Spiegelung funktioniert korrekt?
 ```sh
 expand how_many count: warum ist 1003?
+Warum ist nicht die Anzahl der berechneten Zustände beim leeren 0 Startroot node gleich 765?
+expand count how_many
 ```
 
 best_action und Unentschieden war komisch
