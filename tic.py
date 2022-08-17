@@ -5,6 +5,12 @@ import json
 import hashlib
 import numpy
 
+def is_among_list(special, arrays):
+  for array in arrays:
+    if (special == array).all():
+      return True
+  return False
+
 X = 1
 O = -1
 
@@ -53,10 +59,44 @@ class State:
     return next_state
 
   def possible_actions(self):
-    if self.winning_streak is None:
-      empty_positions = list(zip(*(numpy.array(self.board) == 0).nonzero()))
-      return empty_positions
-    return []
+
+    if self.winning_streak is not None:
+      return []
+
+    empty_positions = list(zip(*(numpy.array(self.board) == 0).nonzero()))
+    # empty_positions = list(zip(*(self.board == 0).nonzero()))
+
+    distinct_boards = []
+    non_reducable_actions = []
+    for empty_position in empty_positions:
+
+      next_board = self.board.copy()
+      next_board[empty_position] = self.current_player
+
+      # Rotate and reflect the board in all possible ways.
+      # There are 8 results of rotations and reflections.
+      # All of these can be achieved by concatenating one rotation and one reflection.
+      # The rotation will be the counter-clock wise rotation by one corner.
+      # The reflection will be along the middle row.
+      boards_where_each_state_has_the_same_best_action = []
+      states_with_the_same_best_action = []
+      for number_of_rotations in range(4):
+        rotated_board = numpy.rot90(next_board, k = number_of_rotations)
+        reflected_board = numpy.flipud(rotated_board)
+        boards_where_each_state_has_the_same_best_action.append(rotated_board)
+        boards_where_each_state_has_the_same_best_action.append(reflected_board)
+
+        rotated_state = State(rotated_board)
+        reflected_state = State(reflected_board)
+        states_with_the_same_best_action.append(rotated_state)
+        states_with_the_same_best_action.append(reflected_state)
+      hash_minimal_state_with_the_same_best_action = min(states_with_the_same_best_action, key = lambda state: state.hash)
+      hash_minimal_board = hash_minimal_state_with_the_same_best_action.board
+      if not is_among_list(hash_minimal_board, distinct_boards):
+        distinct_boards.append(hash_minimal_board)
+        non_reducable_actions.append(empty_position)
+
+    return non_reducable_actions
 
 how_many = 0
 class Node:
@@ -81,34 +121,17 @@ class Node:
 
   def create_node(board, parent=None, last_action=None):
 
-    # Rotate and reflect the board in all possible ways.
-    # There are 8 results of rotations and reflections.
-    # All of these can be achieved by concatenating one rotation and one reflection.
-    # The rotation will be the counter-clock wise rotation by one corner.
-    # The reflection will be along the middle row.
-    boards_where_each_state_has_the_same_best_action = []
-    states_with_the_same_best_action = []
-    for number_of_rotations in range(4):
-      rotated_board = numpy.rot90(board, k = number_of_rotations)
-      reflected_board = numpy.flipud(rotated_board)
-      boards_where_each_state_has_the_same_best_action.append(rotated_board)
-      boards_where_each_state_has_the_same_best_action.append(reflected_board)
-
-      rotated_state = State(rotated_board)
-      reflected_state = State(reflected_board)
-      states_with_the_same_best_action.append(rotated_state)
-      states_with_the_same_best_action.append(reflected_state)
-    hash_minimal_state_with_the_same_best_action = min(states_with_the_same_best_action, key = lambda state: state.hash)
+    state = State(board)
 
     # Try to fetch a node from memory.
-    if hash_minimal_state_with_the_same_best_action.hash in node_from_state_hash:
-      return node_from_state_hash[hash_minimal_state_with_the_same_best_action.hash]
+    if state.hash in node_from_state_hash:
+      return node_from_state_hash[state.hash]
 
     # Fetching didn't work... create a node,
-    node = Node(hash_minimal_state_with_the_same_best_action, parent, last_action)
+    node = Node(state, parent, last_action)
 
     # then save it into memory,
-    node_from_state_hash[hash_minimal_state_with_the_same_best_action.hash] = node
+    node_from_state_hash[state.hash] = node
 
     # and make it available for use.
     return node
