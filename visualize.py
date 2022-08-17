@@ -7,7 +7,7 @@ import os
 
 def create_svg(node):
 
-  # if os.path.exists(f'nodes/{node.state.hash}.svg'): return
+  if os.path.exists(f'nodes/{node.state.hash}.svg'): return
 
   plot = bokeh.models.Plot(
     width = 300,
@@ -135,6 +135,52 @@ def create_svg(node):
       plot.add_glyph(source, triangle)
   # =====================================================================
 
+  # Umrahmung eines Endzustands
+  # =====================================================================
+  # Endzustand: Jemand hat gewonnen.
+  if node.state.immediate_result is not None:
+    if node.state.immediate_result == 1:
+      color = '#115ab2'
+    if node.state.immediate_result == -1:
+      color = '#b21111'
+    source = bokeh.models.ColumnDataSource({
+      'x': [1.5],
+      'y': [1.5],
+      'w': [3],
+      'h': [3]
+    })
+    glyph = bokeh.models.Rect(
+      x = 'x',
+      y = 'y',
+      width = 'w',
+      height = 'h',
+      fill_alpha=0,
+      line_color=color,
+      line_width=5
+    )
+    plot.add_glyph(source, glyph)
+
+  # Endzustand: Unentschieden
+  if node.state.immediate_result is None and len(node.children) == 0:
+    color = '#9e928a'
+    source = bokeh.models.ColumnDataSource({
+      'x': [1.5],
+      'y': [1.5],
+      'w': [3],
+      'h': [3]
+    })
+    glyph = bokeh.models.Rect(
+      x = 'x',
+      y = 'y',
+      width = 'w',
+      height = 'h',
+      fill_alpha=0,
+      line_color=color,
+      line_width=5
+    )
+    plot.add_glyph(source, glyph)
+  # =====================================================================
+
   # Das Gitter des Bretts
   # =====================================================================
   source = bokeh.models.ColumnDataSource({
@@ -163,11 +209,11 @@ def create_svg(node):
         draw_symbol = node.state.token_to_player(token)
 
         color = '#000000'
-        if node.last_action == (row_index, column_index):
-          color = '#b21111'
+        # if node.last_action == (row_index, column_index):
+          # color = '#b21111'
         if node.state.winning_streak is not None and (row_index, column_index) in node.state.winning_streak:
           if draw_symbol == 'X':
-            color = '#008f0b'
+            color = '#115ab2'
           if draw_symbol == 'O':
             color = '#b21111'
 
