@@ -224,14 +224,14 @@ class Node:
       },
       'best_action': self.best_action,
       'best_future_result': self.best_future_result,
-      'children': self.children
+      # 'children': self.children
     })
 
-  def get_children_hashes(self):
+  def get_children_hashes_and_best_action_indicators(self):
     children_hashes = []
     for action, child_node in self.children.items():
       if child_node is not None:
-        children_hashes.append(child_node.state.hash)
+        children_hashes.append((child_node.state.hash, action))
     return children_hashes
 
   def create_vis_js_json(self):
@@ -250,7 +250,8 @@ class Node:
       vis_node_declaration = {
         'id': state_hash,
         'level': state_level,
-        'image': f'nodes/{node.state.hash}.svg'
+        'image': f'nodes/{node.state.hash}.svg',
+        'title': str(self)
       }
       vis_js_json['nodes'].append(vis_node_declaration)
 
@@ -258,15 +259,17 @@ class Node:
 
     vis_js_json['edges'] = []
     for state_hash, node in node_from_state_hash.items():
-      children_hashes = node.get_children_hashes()
+      children_hashes = node.get_children_hashes_and_best_action_indicators()
       info(state_hash)
       info(children_hashes)
-      for child_hash in children_hashes:
+      for child_hash, action in children_hashes:
 
         # This vis.js configuration applies to this specific edge.
         vis_edge_declaration = {
           'from': state_hash,
-          'to': child_hash
+          'to': child_hash,
+          'color': '#008f0b' if self.best_action == action else '#000000',
+          'title': f'htmlTitle("<b>{action}</b>")'
         }
         vis_js_json['edges'].append(vis_edge_declaration)
 
@@ -290,4 +293,12 @@ vis_js_json = node.create_vis_js_json()
 info(vis_js_json)
 with open('tree_info.js', 'w') as file:
   print('tree_info=', end = '', file=file)
-  print(json.dumps(vis_js_json, indent = 2), end = '', file=file)
+  javascript_code = json.dumps(vis_js_json, indent = 2)
+
+  # Without this, we will not get nice colors in the text that appears,
+  # when the user moves the mouse over a game tree node.
+  javascript_code = javascript_code.replace('"htmlTitle', 'htmlTitle')
+  javascript_code = javascript_code.replace(')"', ')')
+  javascript_code = javascript_code.replace('\\"', '"')
+
+  print(javascript_code, end = '', file=file)

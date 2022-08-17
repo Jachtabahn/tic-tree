@@ -1,6 +1,13 @@
 <html>
 <head>
   <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+  <script type="text/javascript">
+    function htmlTitle(html) {
+      const container = document.createElement("div");
+      container.innerHTML = html;
+      return container;
+    }
+  </script>
   <script type="text/javascript" src="tree_info.js"></script>
 
   <style type="text/css">
@@ -58,11 +65,21 @@
         levelSeparation: 300
       },
     },
-    physics:{
+    physics: {
       enabled: true,
       hierarchicalRepulsion: {
+        // Without this command, the nodes on the same game tree level are too close to each other and their boards overlap.
         nodeDistance: 400
       }
+    },
+    interaction: {
+      hover: true,
+      multiselect: true,
+      keyboard: {
+        enabled: true
+      },
+      // hideEdgesOnDrag: true,
+      navigationButtons: true
     }
   };
   // initialize your network!
