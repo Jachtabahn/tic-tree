@@ -82,8 +82,28 @@
       navigationButtons: true
     }
   };
+
   // initialize your network!
   var network = new vis.Network(container, data, options);
+
+  // {
+  //   nodes: [Array of selected nodeIds],
+  //   edges: [Array of selected edgeIds],
+  //   event: [Object] original click event,
+  //   pointer: {
+  //     DOM: {x:pointer_x, y:pointer_y},
+  //     canvas: {x:canvas_x, y:canvas_y}
+  //    }
+  // }
+  // We come here, when at least one edge has been newly selected.
+  // There can also be group of more than one edge being selected, for example when you click
+  // on a node with several edges.
+  // network.on('selectEdge', function (parameters) {
+  //   console.log(parameters.edges)
+  //   console.log(data.edges)
+
+  //   network.clustering.updateEdge(parameters.edges[0], {color: 'red'})
+  // })
 </script>
 </body>
 </html>
