@@ -1,0 +1,4 @@
+#!/usr/bin/fish
+
+rm -rf nodes/
+ipython3 tic.py
