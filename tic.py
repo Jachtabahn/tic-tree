@@ -120,8 +120,8 @@ class Node:
   def create_root_node():
     state = State(board = numpy.array([
       [0, 0, 0],
-      [0, 0, O],
-      [0, X, X]
+      [0, 0, 0],
+      [0, 0, 0]
     ]))
 
     # Try to fetch a node from memory.
@@ -157,31 +157,16 @@ class Node:
     return node
 
   def expand(self):
+
+    # Expand only a limited number of times.
+    global how_many
+    if not how_many < 100: return
+    how_many += 1
+    print(f'Expanded: {how_many} Tic Tac Toe game tree inner nodes.')
+
     for action in self.children:
       child_node = self.create_child_node(action)
       self.children[action] = child_node
-
-      global how_many
-      if how_many < 10000000000000000000:
-        child_node.expand()
-        print(f'Computed: {how_many} Tic Tac Toe game tree nodes.')
-        how_many += 1
-
-        if child_node.children:
-          # We initialize the outcome and action that we estimate to be the best possible from this state.
-          if self.best_future_result is None:
-            self.best_future_result = child_node.best_future_result
-            self.best_action = action
-
-          # Maximizer.
-          if self.state.current_player == X and child_node.best_future_result > self.best_future_result:
-            self.best_future_result = child_node.best_future_result
-            self.best_action = action
-
-          # Minimizer.
-          if self.state.current_player == O and child_node.best_future_result < self.best_future_result:
-            self.best_future_result = child_node.best_future_result
-            self.best_action = action
 
       # Is the child_node a leaf, where we have a winner?
       if child_node.state.immediate_result is not None:
@@ -219,17 +204,35 @@ class Node:
           self.best_future_result = 0
           self.best_action = action
 
+      if child_node.children:
+
+        if child_node.best_future_result is None:
+          child_node.expand()
+
+        # This assert will be broken, if the `how_many` value is too small.
+        # assert child_node.best_future_result is not None
+        if child_node.best_future_result is None: continue
+
+        # We initialize the outcome and action that we estimate to be the best possible from this state.
+        if self.best_future_result is None:
+          self.best_future_result = child_node.best_future_result
+          self.best_action = action
+
+        # Maximizer.
+        if self.state.current_player == X and child_node.best_future_result > self.best_future_result:
+          self.best_future_result = child_node.best_future_result
+          self.best_action = action
+
+        # Minimizer.
+        if self.state.current_player == O and child_node.best_future_result < self.best_future_result:
+          self.best_future_result = child_node.best_future_result
+          self.best_action = action
+
   def determine_level(self):
     level = 0
     parent = self.parent
     while parent is not None:
-
       assert type(parent) == Node
-      # type(node) == Node
-      # True
-      # type(node) == int
-      # False
-
       parent = parent.parent
       level += 1
     return level
@@ -285,17 +288,14 @@ class Node:
         # X gewinnt über diesen Zug.
         if node.best_future_result == X and node.best_action == action:
           edge_color = '#115ab2'
-          note = 'X will win'
 
         # O gewinnt über diesen Zug.
         if node.best_future_result == O and node.best_action == action:
           edge_color = '#b21111'
-          note = 'O will win'
 
         # Keiner gewinnt über diesen Zug.
         if node.best_future_result == 0 and node.best_action == action:
           edge_color = '#9e928a'
-          note = 'There will be draw'
 
         next_board = node.state.board.copy()
         next_board[action] = node.state.current_player
@@ -304,7 +304,7 @@ class Node:
         assert next_state.hash in node_from_state_hash
         next_node = node_from_state_hash[next_state.hash]
 
-        note = None
+        note = '?'
         if next_node.best_future_result == X:
           note = 'X will win'
         if next_node.best_future_result == O:
@@ -324,7 +324,7 @@ class Node:
           'from': state_hash,
           'to': child_hash,
           'color': edge_color,
-          'title': f'htmlTitle("<b>{action}</b>: {note}")'
+          'title': f'htmlTitle("<b>{action[1] + 1}⮕ {action[0] + 1}⬇</b>: {note}")'
         }
         vis_js_json['edges'].append(vis_edge_declaration)
 
