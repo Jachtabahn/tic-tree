@@ -9,101 +9,131 @@
     }
   </script>
   <script type="text/javascript" src="tree_info.js"></script>
-
-  <style type="text/css">
-    #mynetwork {
-      width: 100%;
-      height: 100%;
-
-      /* If `border: 0px;` is omitted, thick, black lines around the game tree might be drawn. */
-      border: 0px;
-    }
-  </style>
+  <script type="text/css" src="tree.css"></script>
   <title>🌳 Game Tree</title>
 </head>
 <body>
-<div id="mynetwork"></div>
+
+<div id="wrapper">
+  <div id="mynetwork"></div>
+  <div id="loadingBar">
+    <div class="outerBorder">
+      <div id="text">0%</div>
+      <div id="border">
+        <div id="bar"></div>
+      </div>
+    </div>
+  </div>
+</div>
 
 <script type="text/javascript">
 
-  // create an array with nodes
-  // tree_info is loaded with the `script src="tree_info.js" /script` command
-  var nodes = new vis.DataSet(tree_info.nodes);
+  function draw() {
 
-  // create an array with edges
-  var edges = new vis.DataSet(tree_info.edges);
+    // create an array with nodes
+    // tree_info is loaded with the `script src="tree_info.js" /script` command
+    var nodes = new vis.DataSet(tree_info.nodes);
 
-  // create a network
-  var container = document.getElementById('mynetwork');
+    // create an array with edges
+    var edges = new vis.DataSet(tree_info.edges);
 
-  // provide the data in the vis format
-  var data = {
-    nodes: nodes,
-    edges: edges
-  };
-  var options = {
+    // create a network
+    var container = document.getElementById('mynetwork');
 
-    // This configuration applies to all nodes.
-    nodes: {
-      shape: "image"
-    },
+    // provide the data in the vis format
+    var data = {
+      nodes: nodes,
+      edges: edges
+    };
+    var options = {
 
-    // This configuration applies to all edges.
-    edges: {
-      arrows: 'to',
-      arrowStrikethrough: false,
-      color: {
-        color: '#000000',
-        highlight: 'red'
+      // This configuration applies to all nodes.
+      nodes: {
+        shape: "image"
       },
-      selectionWidth: 16
-    },
 
-    layout: {
-      hierarchical: {
-        direction: "UD",
-        levelSeparation: 1000
+      // This configuration applies to all edges.
+      edges: {
+        arrows: 'to',
+        arrowStrikethrough: false,
+        selectionWidth: 16
       },
-    },
-    physics: {
-      enabled: true,
-      hierarchicalRepulsion: {
-        // Without this command, the nodes on the same game tree level are too close to each other and their boards overlap.
-        nodeDistance: 400
-      }
-    },
-    interaction: {
-      hover: true,
-      multiselect: true,
-      keyboard: {
-        enabled: true
+
+      layout: {
+        hierarchical: {
+          direction: "UD",
+          levelSeparation: 1000
+        },
       },
-      // hideEdgesOnDrag: true,
-      navigationButtons: true
-    }
-  };
+      physics: {
+        enabled: true,
+        hierarchicalRepulsion: {
+          // Without this command, the nodes on the same game tree level are too close to each other and their boards overlap.
+          nodeDistance: 400
+        },
+        stabilization: {
+          enabled: true,
+          iterations: 2000,
+          updateInterval: 25,
+        },
+      },
+      interaction: {
+        hover: true,
+        multiselect: true,
+        keyboard: {
+          enabled: true
+        },
+        // hideEdgesOnDrag: true,
+        navigationButtons: true
+      },
+    };
 
-  // initialize your network!
-  var network = new vis.Network(container, data, options);
+    // initialize your network!
+    var network = new vis.Network(container, data, options);
 
-  // {
-  //   nodes: [Array of selected nodeIds],
-  //   edges: [Array of selected edgeIds],
-  //   event: [Object] original click event,
-  //   pointer: {
-  //     DOM: {x:pointer_x, y:pointer_y},
-  //     canvas: {x:canvas_x, y:canvas_y}
-  //    }
-  // }
-  // We come here, when at least one edge has been newly selected.
-  // There can also be group of more than one edge being selected, for example when you click
-  // on a node with several edges.
-  // network.on('selectEdge', function (parameters) {
-  //   console.log(parameters.edges)
-  //   console.log(data.edges)
+    network.on("stabilizationProgress", function (params) {
+      var maxWidth = 496;
+      var minWidth = 20;
+      var widthFactor = params.iterations / params.total;
+      var width = Math.max(minWidth, maxWidth * widthFactor);
 
-  //   network.clustering.updateEdge(parameters.edges[0], {color: 'red'})
-  // })
+      document.getElementById("bar").style.width = width + "px";
+      document.getElementById("text").innerText =
+        Math.round(widthFactor * 100) + "%";
+    });
+    network.once("stabilizationIterationsDone", function () {
+      document.getElementById("text").innerText = "100%";
+      document.getElementById("bar").style.width = "496px";
+      document.getElementById("loadingBar").style.opacity = 0;
+      // really clean the dom element
+      setTimeout(function () {
+        document.getElementById("loadingBar").style.display = "none";
+      }, 500);
+    });
+
+    // {
+    //   nodes: [Array of selected nodeIds],
+    //   edges: [Array of selected edgeIds],
+    //   event: [Object] original click event,
+    //   pointer: {
+    //     DOM: {x:pointer_x, y:pointer_y},
+    //     canvas: {x:canvas_x, y:canvas_y}
+    //    }
+    // }
+    // We come here, when at least one edge has been newly selected.
+    // There can also be group of more than one edge being selected, for example when you click
+    // on a node with several edges.
+    // network.on('selectEdge', function (parameters) {
+    //   console.log(parameters.edges)
+    //   console.log(data.edges)
+
+    //   network.clustering.updateEdge(parameters.edges[0], {color: 'red'})
+    // })
+  }
+
+  window.addEventListener("load", () => {
+    draw();
+  });
 </script>
 </body>
 </html>
